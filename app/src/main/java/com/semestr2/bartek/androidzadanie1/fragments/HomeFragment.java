@@ -3,23 +3,25 @@ package com.semestr2.bartek.androidzadanie1.fragments;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.PagerSnapHelper;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.SnapHelper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
+import android.widget.GridView;
 
 import com.semestr2.bartek.androidzadanie1.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.R;
 import com.semestr2.bartek.androidzadanie1.books.Book;
+import com.semestr2.bartek.androidzadanie1.categories.Category;
+import com.semestr2.bartek.androidzadanie1.categories.OnLikeListener;
+import com.semestr2.bartek.androidzadanie1.categories.RecommendationAdapter;
+
+import java.util.ArrayList;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -29,7 +31,7 @@ import com.semestr2.bartek.androidzadanie1.books.Book;
  * Use the {@link HomeFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment{
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -82,7 +84,13 @@ public class HomeFragment extends Fragment {
 
 
         ViewPager vp = v.findViewById(R.id.promotions_view_pager);
-        vp.setAdapter(new PromotionsPagerAdapter(this, DatabaseAccess.getInstance(getContext()), vp));
+        DatabaseAccess instance = DatabaseAccess.getInstance(getContext());
+        vp.setAdapter(new PromotionsPagerAdapter(this, instance, vp));
+        GridView recs = v.findViewById(R.id.recommendations);
+        recs.setNumColumns(2);
+        instance.open();
+        ArrayList<Category> recommends = instance.getRecommendations(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("pref_userName", null));
+        recs.setAdapter(new RecommendationAdapter(getActivity(), recommends));
 
         return v;
     }
@@ -125,6 +133,7 @@ public class HomeFragment extends Fragment {
                 .build();
         mListener.onHomeFragmentInteraction(uri, b);
     }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -141,4 +150,6 @@ public class HomeFragment extends Fragment {
         void onHomeFragmentInteraction(Uri uri, Object data);
         void setHomeIcon();
     }
+
+
 }

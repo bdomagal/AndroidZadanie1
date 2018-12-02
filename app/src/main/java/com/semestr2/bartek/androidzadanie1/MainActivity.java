@@ -17,6 +17,7 @@ import android.widget.Toast;
 
 import com.semestr2.bartek.androidzadanie1.books.Book;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesArrayAdapter;
+import com.semestr2.bartek.androidzadanie1.categories.CategoriesFragment;
 import com.semestr2.bartek.androidzadanie1.fragments.BookDetailsFragment;
 import com.semestr2.bartek.androidzadanie1.fragments.HomeFragment;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
@@ -30,6 +31,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     private FrameLayout frame;
     private BookDetailsFragment bookDetailsFragment = new BookDetailsFragment();
     Fragment currentFragment;
+    private CategoriesFragment categoriesFragment;
 
 
     @Override
@@ -154,7 +156,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         });
     }
 
-    private void swapFragmentTo(BookDetailsFragment bookDetailsFragment, boolean isNew) {
+    private void swapFragmentTo(Fragment bookDetailsFragment, boolean isNew) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.detach(homeFragment);
         if(isNew){
@@ -164,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         }
         ft.addToBackStack(null);
         ft.commit();
+        setHomeAsUp();
         currentFragment = bookDetailsFragment;
     }
 
@@ -177,6 +180,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         }
         fm.popBackStackImmediate();
         ft.commit();
+        setHomeIcon();
     }
 
     @Override
@@ -193,5 +197,15 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     public void setHomeAsUp(){
         myToolbar.setNavigationOnClickListener((v)->onBackPressed());
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_action_back);
+    }
+
+    public void launchCategoriesFragment() {
+        if(categoriesFragment!=null){
+            swapFragmentTo(categoriesFragment, false);
+        }
+        else{
+            categoriesFragment = new CategoriesFragment();
+            swapFragmentTo(categoriesFragment, true);
+        }
     }
 }

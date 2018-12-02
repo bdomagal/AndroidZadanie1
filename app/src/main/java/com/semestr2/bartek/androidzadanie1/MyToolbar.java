@@ -30,7 +30,7 @@ public class MyToolbar extends Toolbar {
         super(context, attrs, defStyleAttr);
     }
 
-    public Menu inflateMenu(final AppCompatActivity activity, Menu menu) {
+    public Menu inflateMenu(final MainActivity activity, Menu menu) {
         this.menu = menu;
         this.activity = activity;
         activity.getMenuInflater().inflate(R.menu.main_menu, menu);
@@ -80,8 +80,7 @@ public class MyToolbar extends Toolbar {
                 new MenuItem.OnMenuItemClickListener() {
                     @Override
                     public boolean onMenuItemClick(MenuItem item) {
-                        final Intent intent = new Intent(activity, CategoriesActivity.class);
-                        activity.startActivity(intent);
+                        activity.launchCategoriesFragment();
                         return true;
                     }
                 });

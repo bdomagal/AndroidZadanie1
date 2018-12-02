@@ -1,9 +1,11 @@
 package com.semestr2.bartek.androidzadanie1;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.preference.PreferenceManager;
 
 import com.semestr2.bartek.androidzadanie1.books.Book;
 import com.semestr2.bartek.androidzadanie1.categories.Category;
@@ -84,5 +86,52 @@ public class DatabaseAccess {
             cursor.close();
         }
         return list;
+    }
+
+    public boolean authenticate(String mEmail, String mPassword) {
+        Cursor cursor = database.rawQuery("SELECT * FROM Users WHERE login = ? AND password = ? ", new String[] {mEmail, mPassword});
+        if(cursor.getCount()==1){
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public ArrayList<Category> getRecommendations(String user) {
+        ArrayList<Category> recs = new ArrayList<>();
+        Cursor cursor;
+        if(user!=null) {
+            cursor = database.rawQuery("SELECT * FROM Categories AS c JOIN Recommendations AS r ON c.name = r.category LEFT JOIN (SELECT * FROM CategoryLikes WHERE user = ?) AS l ON c.name = l.category", new String[]{user});
+        }else{
+            cursor = database.rawQuery("SELECT * FROM Categories AS c JOIN Recommendations AS r ON c.name = r.category LEFT JOIN (SELECT * FROM CategoryLikes WHERE user = null) AS l ON c.name = l.category", null);
+        }
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            Category item = new Category(cursor.getString(0), cursor.getString(1), cursor.getBlob(2));
+            item.setChecked(cursor.getString(5)!=null);
+            recs.add(item);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return recs;
+    }
+
+    public void setLike(Category item, boolean b, String user) {
+
+        ContentValues cv = new ContentValues();
+
+        if(b) {
+            cv.put("user", user);
+            cv.put("category", item.getName());
+            database.insert("CategoryLikes", null, cv);
+            //database.rawQuery("INSERT INTO CategoryLikes (user, category) VALUES (?, ?)", new String[]{user, item.getName()});
+        }
+        else{
+            database.delete("CategoryLikes", "user = ? AND category = ?", new String[] {user, item.getName()});
+            //database.rawQuery("DELETE FROM CategoryLikes WHERE user = ? AND category = ?", new String[]{user, item.getName()});
+        }
+
     }
 }

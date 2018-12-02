@@ -8,4 +8,6 @@ public interface OnFragmentInteractionListener {
     void onBookDetailsInteraction(Uri uri);
     void onAddToCartListener(Book book, boolean isBuyNow);
     void setHomeAsUp();
+
+   // void markFavourite();
 }
