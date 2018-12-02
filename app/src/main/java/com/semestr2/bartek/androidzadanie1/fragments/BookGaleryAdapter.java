@@ -1,18 +1,13 @@
 package com.semestr2.bartek.androidzadanie1.fragments;
 
-import android.content.Context;
-import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.semestr2.bartek.androidzadanie1.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.R;
@@ -20,18 +15,25 @@ import com.semestr2.bartek.androidzadanie1.books.Book;
 
 import java.util.ArrayList;
 
-class PromotionsPagerAdapter extends PagerAdapter{
+class BookGaleryAdapter extends PagerAdapter{
 
-    ArrayList<Book> data;
-    HomeFragment mContext;
+    ArrayList<Bitmap> data;
+    BookDetailsFragment mContext;
     final ViewPager parent;
 
-    public PromotionsPagerAdapter(HomeFragment context, DatabaseAccess instance, ViewPager parent) {
+    public BookGaleryAdapter(BookDetailsFragment context, Book b, ViewPager parent) {
         mContext = context;
-        instance.open();
-        data = instance.getPromotions();
-        instance.close();
         this.parent = parent;
+        data = new ArrayList<>();
+        if(b==null){
+            return;
+        }
+        if(b.getCover()!=null) {
+            data.add(BitmapFactory.decodeByteArray(b.getCover(), 0, b.getCover().length));
+        }
+        if(b.getCover()!=null) {
+            data.add(BitmapFactory.decodeByteArray(b.getAltCover(), 0, b.getAltCover().length));
+        }
     }
     @Override
     public int getCount() {
@@ -48,11 +50,11 @@ class PromotionsPagerAdapter extends PagerAdapter{
     public Object instantiateItem(@NonNull ViewGroup container, int position) {
         ViewGroup layout = (ViewGroup)mContext.getLayoutInflater().inflate(R.layout.galery_item, container, false);
         //((TextView)layout.findViewById(R.id.galery_item_title)).setText(data.get(position).getTitle());
-        byte[] cover = data.get(position).getCover();
         ImageView image = layout.findViewById(R.id.galery_item_image);
-        image.setImageBitmap(BitmapFactory.decodeByteArray(cover, 0, cover.length));
-        image.setOnClickListener((v)-> {
-            mContext.displayBookDetails(data.get(position));
+        image.setImageBitmap(data.get(position));
+        image.setOnLongClickListener((v)-> {
+            //TODO - Add swap to big galery view
+            return false;
         });
         container.addView(layout);
         ((ImageView)layout.findViewById(R.id.galery_left)).setOnClickListener((v) ->parent.setCurrentItem((position-1)>=0? position-1 : data.size()-1,true));

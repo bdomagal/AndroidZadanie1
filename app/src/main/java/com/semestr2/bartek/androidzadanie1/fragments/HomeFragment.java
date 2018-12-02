@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 
 import com.semestr2.bartek.androidzadanie1.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.R;
+import com.semestr2.bartek.androidzadanie1.books.Book;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -81,7 +82,7 @@ public class HomeFragment extends Fragment {
 
 
         ViewPager vp = v.findViewById(R.id.promotions_view_pager);
-        vp.setAdapter(new PromotionsPagerAdapter(mActivity, DatabaseAccess.getInstance(getContext())));
+        vp.setAdapter(new PromotionsPagerAdapter(this, DatabaseAccess.getInstance(getContext()), vp));
 
         return v;
     }
@@ -96,6 +97,7 @@ public class HomeFragment extends Fragment {
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+        mListener.setHomeIcon();
     }
 
     @Override
@@ -116,6 +118,13 @@ public class HomeFragment extends Fragment {
         mListener = null;
     }
 
+    public void displayBookDetails(Book b){
+        Uri uri = new Uri.Builder()
+                .appendPath("home")
+                .appendPath("displayBook")
+                .build();
+        mListener.onHomeFragmentInteraction(uri, b);
+    }
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -129,5 +138,7 @@ public class HomeFragment extends Fragment {
     public interface OnHomeFragmentInteractionListener {
         // TODO: Update argument type and name
         void onHomeFragmentInteraction(Uri uri);
+        void onHomeFragmentInteraction(Uri uri, Object data);
+        void setHomeIcon();
     }
 }

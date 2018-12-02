@@ -1,20 +1,41 @@
 package com.semestr2.bartek.androidzadanie1.books;
 
-public class Book {
+import java.io.Serializable;
+
+public class Book implements Serializable {
     private String title;
-    private String Author;
+    private String author;
     private String genre;
     private byte[] cover;
     private byte[] altCover;
     private double price;
+    private int amount;
+
+    public int getAmount() {
+        return amount;
+    }
+
+    public void setAmount(int amount) {
+        this.amount = amount;
+    }
 
     public Book(String title, String author, String genre, byte[] cover, byte[] altCover, double price) {
         this.title = title;
-        Author = author;
+        this.author = author;
         this.genre = genre;
         this.cover = cover;
         this.altCover = altCover;
         this.price = price;
+    }
+
+    public Book(Book b, int amount){
+        this.title = b.title;
+        author = b.author;
+        this.genre = b.genre;
+        this.cover = b.cover;
+        this.altCover = b.altCover;
+        this.price = b.price;
+        this.amount = amount;
     }
 
     public String getTitle() {
@@ -26,11 +47,11 @@ public class Book {
     }
 
     public String getAuthor() {
-        return Author;
+        return author;
     }
 
     public void setAuthor(String author) {
-        Author = author;
+        this.author = author;
     }
 
     public String getGenre() {
@@ -55,5 +76,13 @@ public class Book {
 
     public void setAltCover(byte[] altCover) {
         this.altCover = altCover;
+    }
+
+    public String getPriceAsString() {
+        return price+"";
+    }
+
+    public double getPrice() {
+        return price;
     }
 }

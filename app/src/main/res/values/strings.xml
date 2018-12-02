@@ -32,4 +32,12 @@
     <string name="displays_galery_item_image">Displays galery item image</string>
     <string name="special_offers">Oferty Specjalne</string>
     <string name="interesting_categories">Polecane Kategorie</string>
+    <string name="description">Opis</string>
+    <string name="lorem_ipsum">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</string>
+    <string name="add_to_cart">Dodaj do\nKoszyka</string>
+    <string name="input_amount">Podaj ilosc</string>
+    <string name="close">Zamknij</string>
+    <string name="buy_now">Kup Teraz</string>
+    <string name="total">Razem: %1$s</string>
+    <string name="price_for_book">Cena: %1$s</string>
 </resources>
