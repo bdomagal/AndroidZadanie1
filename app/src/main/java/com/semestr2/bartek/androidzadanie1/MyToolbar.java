@@ -65,6 +65,7 @@ public class MyToolbar extends Toolbar {
                         SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(activity).edit();
                         edit.putString("pref_userName", null);
                         edit.commit();
+
                         login.setVisible(true);
                         logout.setVisible(false);
                         return true;

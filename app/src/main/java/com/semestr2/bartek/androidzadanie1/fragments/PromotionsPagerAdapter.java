@@ -28,9 +28,7 @@ class PromotionsPagerAdapter extends PagerAdapter{
 
     public PromotionsPagerAdapter(HomeFragment context, DatabaseAccess instance, ViewPager parent) {
         mContext = context;
-        instance.open();
         data = instance.getPromotions();
-        instance.close();
         this.parent = parent;
     }
     @Override

@@ -1,7 +1,9 @@
 package com.semestr2.bartek.androidzadanie1;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -10,7 +12,9 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.CheckBox;
 import android.widget.FrameLayout;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -46,13 +50,16 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         setupToolbar();
         loadCategoriesList(databaseAccess);
         homeFragment = new HomeFragment();
+        categoriesFragment = new CategoriesFragment();
+
         FragmentTransaction fm = getSupportFragmentManager().beginTransaction();
         fm.replace(R.id.page_content, homeFragment);
         fm.add(R.id.page_content, bookDetailsFragment);
         fm.detach(bookDetailsFragment);
+        fm.add(R.id.page_content, categoriesFragment);
+        fm.detach(categoriesFragment);
         //fm.detach(homeFragment);
         fm.commit();
-        databaseAccess.close();
 
     }
 
@@ -82,9 +89,9 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         myToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!categoriesDrawer.isDrawerOpen(GravityCompat.START)){
+                if (!categoriesDrawer.isDrawerOpen(GravityCompat.START)) {
                     categoriesDrawer.openDrawer(GravityCompat.START);
-                }else{
+                } else {
                     categoriesDrawer.closeDrawer(GravityCompat.END);
                 }
             }
@@ -96,21 +103,42 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     public boolean onCreateOptionsMenu(Menu menu) {
 
         menu = myToolbar.inflateMenu(this, menu);
+        final Menu men = menu;
+        final MenuItem logout = menu.findItem(R.id.logout);
+        logout.setOnMenuItemClickListener(
+                new MenuItem.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        Toast.makeText(self, "Bye, " + PreferenceManager.getDefaultSharedPreferences(self).getString("pref_userName", null),
+                                Toast.LENGTH_SHORT).show();
+                        SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(self).edit();
+                        edit.putString("pref_userName", null);
+                        edit.commit();
+                        refreshData();
+                        men.findItem(R.id.login).setVisible(true);
+                        logout.setVisible(false);
+                        return true;
+                    }
+                });
         return super.onCreateOptionsMenu(menu);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        System.out.println("paodgpaogapg");
-        switch (requestCode){
-            case MyToolbar.LOGIN : {
-                if(resultCode == AppCompatActivity.RESULT_OK && data.getBooleanExtra("isLoggedIn", false)){
+        switch (requestCode) {
+            case MyToolbar.LOGIN: {
+                if (resultCode == AppCompatActivity.RESULT_OK && data.getBooleanExtra("isLoggedIn", false)) {
+                    refreshData();
                     myToolbar.loginSuccess();
                 }
                 break;
             }
         }
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void refreshData() {
+        homeFragment.refreshData();
     }
 
     @Override
@@ -122,12 +150,12 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     public void onHomeFragmentInteraction(Uri uri, Object data) {
         String[] segments = uri.getPath().split("/");
         System.out.println(segments[2]);
-        if(segments.length>2){
-            switch (segments[2]){
-                case "displayBook" : {
+        if (segments.length > 2) {
+            switch (segments[2]) {
+                case "displayBook": {
                     Book b = (Book) data;
                     boolean isNew = false;
-                    if(bookDetailsFragment==null){
+                    if (bookDetailsFragment == null) {
                         bookDetailsFragment = new BookDetailsFragment();
                     }
                     bookDetailsFragment.setBook(b);
@@ -147,9 +175,9 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         myToolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!categoriesDrawer.isDrawerOpen(GravityCompat.START)){
+                if (!categoriesDrawer.isDrawerOpen(GravityCompat.START)) {
                     categoriesDrawer.openDrawer(GravityCompat.START);
-                }else{
+                } else {
                     categoriesDrawer.closeDrawer(GravityCompat.END);
                 }
             }
@@ -159,11 +187,11 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     private void swapFragmentTo(Fragment bookDetailsFragment, boolean isNew) {
         FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
         ft.detach(homeFragment);
-        if(isNew){
+        if (isNew) {
             ft.add(R.id.page_content, bookDetailsFragment);
-        }else {
-            ft.attach(bookDetailsFragment);
+            ft.detach(bookDetailsFragment);
         }
+        ft.attach(bookDetailsFragment);
         ft.addToBackStack(null);
         ft.commit();
         setHomeAsUp();
@@ -174,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     public void onBackPressed() {
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
-        if(currentFragment!=null){
+        if (currentFragment != null) {
             ft.detach(currentFragment);
             currentFragment = null;
         }
@@ -194,17 +222,15 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     }
 
     @Override
-    public void setHomeAsUp(){
-        myToolbar.setNavigationOnClickListener((v)->onBackPressed());
+    public void setHomeAsUp() {
+        myToolbar.setNavigationOnClickListener((v) -> onBackPressed());
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_action_back);
     }
 
     public void launchCategoriesFragment() {
-        if(categoriesFragment!=null){
+        if (categoriesFragment != null) {
             swapFragmentTo(categoriesFragment, false);
-        }
-        else{
-            categoriesFragment = new CategoriesFragment();
+        } else {
             swapFragmentTo(categoriesFragment, true);
         }
     }

@@ -43,6 +43,9 @@ public class HomeFragment extends Fragment{
 
     private OnHomeFragmentInteractionListener mListener;
     private AppCompatActivity mActivity;
+    private GridView recommendationsView;
+
+    private RecommendationAdapter rc;
 
     public HomeFragment() {
         // Required empty public constructor
@@ -86,11 +89,11 @@ public class HomeFragment extends Fragment{
         ViewPager vp = v.findViewById(R.id.promotions_view_pager);
         DatabaseAccess instance = DatabaseAccess.getInstance(getContext());
         vp.setAdapter(new PromotionsPagerAdapter(this, instance, vp));
-        GridView recs = v.findViewById(R.id.recommendations);
-        recs.setNumColumns(2);
-        instance.open();
+        recommendationsView = v.findViewById(R.id.recommendations);
+        recommendationsView.setNumColumns(2);
         ArrayList<Category> recommends = instance.getRecommendations(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("pref_userName", null));
-        recs.setAdapter(new RecommendationAdapter(getActivity(), recommends));
+        rc = new RecommendationAdapter(getActivity(), recommends);
+        recommendationsView.setAdapter(rc);
 
         return v;
     }
@@ -132,6 +135,14 @@ public class HomeFragment extends Fragment{
                 .appendPath("displayBook")
                 .build();
         mListener.onHomeFragmentInteraction(uri, b);
+    }
+
+    public void refreshData() {
+        DatabaseAccess instance = DatabaseAccess.getInstance(getContext());
+        ArrayList<Category> recommends = instance.getRecommendations(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("pref_userName", null));
+        rc.clear();
+        rc.addAll(recommends);
+        rc.notifyDataSetChanged();
     }
 
     /**

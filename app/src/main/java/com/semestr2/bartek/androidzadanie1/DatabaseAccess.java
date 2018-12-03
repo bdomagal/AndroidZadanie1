@@ -134,4 +134,25 @@ public class DatabaseAccess {
         }
 
     }
+
+    public ArrayList<Category> getCategoriesWithLikes(String user) {
+        ArrayList<Category> recs = new ArrayList<>();
+        Cursor cursor;
+        if(user!=null) {
+            cursor = database.rawQuery("SELECT * FROM Categories AS c LEFT JOIN (SELECT * FROM CategoryLikes WHERE user = ?) AS l ON c.name = l.category", new String[]{user});
+        }else{
+            cursor = database.rawQuery("SELECT * FROM Categories AS c LEFT JOIN (SELECT * FROM CategoryLikes WHERE user = null) AS l ON c.name = l.category", null);
+        }
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast() && !cursor.isBeforeFirst()) {
+            Category item = new Category(cursor.getString(0), cursor.getString(1), cursor.getBlob(2));
+            item.setChecked(cursor.getString(4)!=null);
+            recs.add(item);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return recs;
+
+    }
 }

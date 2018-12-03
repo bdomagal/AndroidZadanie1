@@ -19,9 +19,7 @@ import java.util.ArrayList;
 class CarouselAdapter extends RecyclerView.Adapter {
     ArrayList<Book> books;
     public CarouselAdapter(DatabaseAccess instance) {
-        instance.open();
         books = instance.getPromotions();
-        instance.close();
         Log.e("AAAAAAAAAAAAAAAAAAA", books.size()+"");
     }
 

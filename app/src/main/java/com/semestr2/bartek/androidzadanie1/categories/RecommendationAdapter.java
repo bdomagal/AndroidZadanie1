@@ -24,19 +24,18 @@ public class RecommendationAdapter extends ArrayAdapter<Category> {
 
     private final Activity context;
     private final ArrayList<Category> objects;
-    DatabaseAccess instance;
 
     public RecommendationAdapter(@NonNull Activity context, @NonNull ArrayList<Category> objects) {
         super(context, R.layout.recommendation, objects);
 
         this.objects = objects;
         this.context = context;
-        instance = DatabaseAccess.getInstance(context);
     }
 
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+
 
         LayoutInflater inflater=context.getLayoutInflater();
         View rowView = convertView;
@@ -46,6 +45,7 @@ public class RecommendationAdapter extends ArrayAdapter<Category> {
         TextView title = rowView.findViewById(R.id.title);
         ImageView imageView = rowView.findViewById(R.id.image);
         CheckBox checkBox = rowView.findViewById(R.id.favourite);
+        checkBox.setOnCheckedChangeListener(null);
 
         //this code sets the values of the objects to values from the arrays
         Category item = objects.get(position);
@@ -55,6 +55,7 @@ public class RecommendationAdapter extends ArrayAdapter<Category> {
         checkBox.setOnCheckedChangeListener((compoundButton, b) -> {
             String user = PreferenceManager.getDefaultSharedPreferences(context).getString("pref_userName", null);
             if(user!=null) {
+                DatabaseAccess instance = DatabaseAccess.getInstance(context);
                 instance.setLike(item, b, user);
             }
         });
