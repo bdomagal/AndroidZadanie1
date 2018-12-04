@@ -3,23 +3,22 @@ package com.semestr2.bartek.androidzadanie1.categories;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.semestr2.bartek.androidzadanie1.DatabaseAccess;
+import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.R;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
@@ -27,57 +26,30 @@ import java.util.ArrayList;
 
 
 public class CategoriesFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
     private CategoriesLikesAdapter adapter;
 
+    private AppCompatActivity mActivity;
     private OnFragmentInteractionListener mListener;
 
     public CategoriesFragment() {
         // Required empty public constructor
     }
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment CategoriesFragment.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static CategoriesFragment newInstance(String param1, String param2) {
-        CategoriesFragment fragment = new CategoriesFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View v = inflater.inflate(R.layout.fragment_categories, container, false);
         ListView lv = v.findViewById(R.id.categories_list_view);
-        ;
-        adapter = new CategoriesLikesAdapter(getActivity(), DatabaseAccess.getInstance(getContext())
+
+        adapter = new CategoriesLikesAdapter(mActivity, DatabaseAccess.getInstance(getContext())
                 .getCategoriesWithLikes(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("pref_userName", null)
         ));
         lv.setAdapter(adapter);
@@ -92,6 +64,7 @@ public class CategoriesFragment extends Fragment {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
+            mActivity = (AppCompatActivity) context;
         } else {
             throw new RuntimeException(context.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -109,7 +82,7 @@ public class CategoriesFragment extends Fragment {
         private final Activity context;
         private final ArrayList<Category> objects;
 
-        public CategoriesLikesAdapter(@NonNull Activity context, @NonNull ArrayList<Category> objects) {
+        CategoriesLikesAdapter(@NonNull Activity context, @NonNull ArrayList<Category> objects) {
             super(context, R.layout.categories_drawer_item, objects);
 
             this.objects = objects;
@@ -120,8 +93,11 @@ public class CategoriesFragment extends Fragment {
         @Override
         public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
             String user = PreferenceManager.getDefaultSharedPreferences(context).getString("pref_userName", null);
-            LayoutInflater inflater=context.getLayoutInflater();
-            View rowView=inflater.inflate(R.layout.categories_drawer_item, null,true);
+            View rowView = convertView;
+            if(rowView == null) {
+                LayoutInflater inflater = context.getLayoutInflater();
+                rowView = inflater.inflate(R.layout.categories_drawer_item, parent, false);
+            }
 
             //this code gets references to objects in the listview_row.xml file
             TextView nameTextField = rowView.findViewById(R.id.genre);
@@ -157,15 +133,12 @@ public class CategoriesFragment extends Fragment {
         }
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
+    public void refreshData() {
+        DatabaseAccess instance = DatabaseAccess.getInstance(getContext());
+        ArrayList<Category> recommends = instance.getCategoriesWithLikes(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("pref_userName", null));
+        adapter.clear();
+        adapter.addAll(recommends);
+        adapter.notifyDataSetChanged();
+    }
 
 }

@@ -1,28 +1,21 @@
-package com.semestr2.bartek.androidzadanie1;
+package com.semestr2.bartek.androidzadanie1.database;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.preference.PreferenceManager;
 
 import com.semestr2.bartek.androidzadanie1.books.Book;
 import com.semestr2.bartek.androidzadanie1.categories.Category;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class DatabaseAccess {
     private SQLiteOpenHelper openHelper;
     private SQLiteDatabase database;
     private static DatabaseAccess instance;
 
-    /**
-     * Private constructor to aboid object creation from outside classes.
-     *
-     * @param context
-     */
     private DatabaseAccess(Context context) {
         this.openHelper = new DatabaseOpenHelper(context);
     }
@@ -31,7 +24,7 @@ public class DatabaseAccess {
      * Return a singleton instance of DatabaseAccess.
      *
      * @param context the Context
-     * @return the instance of DabaseAccess
+     * @return the instance of DatabaseAccess
      */
     public static DatabaseAccess getInstance(Context context) {
         if (instance == null) {
@@ -74,7 +67,6 @@ public class DatabaseAccess {
     }
 
     public ArrayList<Book> getPromotions() {
-        //TODO - Method Substitute
         ArrayList<Book> list = new ArrayList<>();
         while(list.size()<4) {
             Cursor cursor = database.rawQuery("SELECT * FROM Book", null);
@@ -90,12 +82,9 @@ public class DatabaseAccess {
 
     public boolean authenticate(String mEmail, String mPassword) {
         Cursor cursor = database.rawQuery("SELECT * FROM Users WHERE login = ? AND password = ? ", new String[] {mEmail, mPassword});
-        if(cursor.getCount()==1){
-            return true;
-        }
-        else{
-            return false;
-        }
+        boolean isAuthenticated = cursor.getCount() == 1;
+        cursor.close();
+        return isAuthenticated;
     }
 
     public ArrayList<Category> getRecommendations(String user) {

@@ -1,20 +1,14 @@
-package com.semestr2.bartek.androidzadanie1.fragments;
+package com.semestr2.bartek.androidzadanie1.home;
 
-import android.content.Context;
-import android.content.Intent;
 import android.graphics.BitmapFactory;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
-import com.semestr2.bartek.androidzadanie1.DatabaseAccess;
+import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.R;
 import com.semestr2.bartek.androidzadanie1.books.Book;
 
@@ -22,11 +16,11 @@ import java.util.ArrayList;
 
 class PromotionsPagerAdapter extends PagerAdapter{
 
-    ArrayList<Book> data;
-    HomeFragment mContext;
-    final ViewPager parent;
+    private ArrayList<Book> data;
+    private HomeFragment mContext;
+    private final ViewPager parent;
 
-    public PromotionsPagerAdapter(HomeFragment context, DatabaseAccess instance, ViewPager parent) {
+    PromotionsPagerAdapter(HomeFragment context, DatabaseAccess instance, ViewPager parent) {
         mContext = context;
         data = instance.getPromotions();
         this.parent = parent;
@@ -49,17 +43,15 @@ class PromotionsPagerAdapter extends PagerAdapter{
         byte[] cover = data.get(position).getCover();
         ImageView image = layout.findViewById(R.id.galery_item_image);
         image.setImageBitmap(BitmapFactory.decodeByteArray(cover, 0, cover.length));
-        image.setOnClickListener((v)-> {
-            mContext.displayBookDetails(data.get(position));
-        });
+        image.setOnClickListener((v)-> mContext.displayBookDetails(data.get(position)));
         container.addView(layout);
-        ((ImageView)layout.findViewById(R.id.galery_left)).setOnClickListener((v) ->parent.setCurrentItem((position-1)>=0? position-1 : data.size()-1,true));
-        ((ImageView)layout.findViewById(R.id.galery_right)).setOnClickListener((v) ->parent.setCurrentItem((position+1)%data.size(),true));
+        (layout.findViewById(R.id.galery_left)).setOnClickListener((v) ->parent.setCurrentItem((position-1)>=0? position-1 : data.size()-1,true));
+        (layout.findViewById(R.id.galery_right)).setOnClickListener((v) ->parent.setCurrentItem((position+1)%data.size(),true));
         return layout;
     }
 
     @Override
-    public void destroyItem(ViewGroup collection, int position, Object view) {
+    public void destroyItem(@NonNull ViewGroup collection, int position, @NonNull Object view) {
         collection.removeView((View) view);
     }
 

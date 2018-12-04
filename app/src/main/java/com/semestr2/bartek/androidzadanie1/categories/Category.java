@@ -1,6 +1,5 @@
 package com.semestr2.bartek.androidzadanie1.categories;
 
-import java.sql.Blob;
 
 public class Category {
     private String name;
@@ -34,7 +33,7 @@ public class Category {
         this.name = name;
     }
 
-    public String getCategoryGroup() {
+    String getCategoryGroup() {
         return categoryGroup;
     }
 
@@ -50,7 +49,7 @@ public class Category {
         this.image = image;
     }
 
-    public void toggle() {
+    void toggle() {
         checked = !checked;
     }
 }

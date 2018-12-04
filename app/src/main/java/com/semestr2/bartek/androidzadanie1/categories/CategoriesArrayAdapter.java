@@ -1,7 +1,6 @@
 package com.semestr2.bartek.androidzadanie1.categories;
 
 import android.app.Activity;
-import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,7 +16,6 @@ import android.widget.TextView;
 import com.semestr2.bartek.androidzadanie1.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class CategoriesArrayAdapter extends ArrayAdapter<Category> {
 
@@ -34,9 +32,11 @@ public class CategoriesArrayAdapter extends ArrayAdapter<Category> {
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-
-        LayoutInflater inflater=context.getLayoutInflater();
-        View rowView=inflater.inflate(R.layout.categories_drawer_item, null,true);
+        View rowView = convertView;
+        if(rowView==null) {
+            LayoutInflater inflater = context.getLayoutInflater();
+            rowView = inflater.inflate(R.layout.categories_drawer_item, parent, false);
+        }
 
         //this code gets references to objects in the listview_row.xml file
         TextView nameTextField = rowView.findViewById(R.id.genre);

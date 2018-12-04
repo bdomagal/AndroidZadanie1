@@ -1,9 +1,11 @@
 package com.semestr2.bartek.androidzadanie1;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
@@ -13,30 +15,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.CheckBox;
-import android.widget.FrameLayout;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.semestr2.bartek.androidzadanie1.books.Book;
+import com.semestr2.bartek.androidzadanie1.books.BookListFragment;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesArrayAdapter;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesFragment;
-import com.semestr2.bartek.androidzadanie1.fragments.BookDetailsFragment;
-import com.semestr2.bartek.androidzadanie1.fragments.HomeFragment;
+import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
+import com.semestr2.bartek.androidzadanie1.books.BookDetailsFragment;
+import com.semestr2.bartek.androidzadanie1.home.HomeFragment;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
-public class MainActivity extends AppCompatActivity implements HomeFragment.OnHomeFragmentInteractionListener, OnFragmentInteractionListener {
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class MainActivity extends AppCompatActivity implements HomeFragment.OnHomeFragmentInteractionListener, OnFragmentInteractionListener, BookListFragment.OnListFragmentInteractionListener {
     final private MainActivity self = this;
     private DrawerLayout categoriesDrawer;
     private MyToolbar myToolbar;
     private DatabaseAccess databaseAccess;
-    private HomeFragment homeFragment;
-    private FrameLayout frame;
-    private BookDetailsFragment bookDetailsFragment = new BookDetailsFragment();
-    Fragment currentFragment;
-    private CategoriesFragment categoriesFragment;
-
+    private Map<String, Fragment> fragments = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,19 +47,23 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
 
         databaseAccess = DatabaseAccess.getInstance(this);
         databaseAccess.open();
-        frame = findViewById(R.id.page_content);
-        setupToolbar();
-        loadCategoriesList(databaseAccess);
-        homeFragment = new HomeFragment();
-        categoriesFragment = new CategoriesFragment();
 
-        FragmentTransaction fm = getSupportFragmentManager().beginTransaction();
-        fm.replace(R.id.page_content, homeFragment);
-        fm.add(R.id.page_content, bookDetailsFragment);
-        fm.detach(bookDetailsFragment);
-        fm.add(R.id.page_content, categoriesFragment);
-        fm.detach(categoriesFragment);
-        //fm.detach(homeFragment);
+        setupToolbar();
+
+        loadCategoriesList(databaseAccess);
+        FragmentManager manager = getSupportFragmentManager();
+        FragmentTransaction fm = manager.beginTransaction();
+        fragments.put("HOME", new HomeFragment());
+        fm.replace(R.id.page_content, fragments.get("HOME"), "HOME");
+        fragments.put("DETAILS", new BookDetailsFragment());
+        fm.add(R.id.page_content, fragments.get("DETAILS"), "DETAILS");
+        fragments.put("CATEGORIES", new CategoriesFragment());
+        fm.add(R.id.page_content, fragments.get("CATEGORIES"), "CATEGORIES");
+        fragments.put("BOOK_LIST", new BookListFragment());
+        fm.add(R.id.page_content, fragments.get("BOOK_LIST"), "BOOK_LIST");
+        fm.detach(fragments.get("DETAILS"));
+        fm.detach(fragments.get("CATEGORIES"));
+        fm.detach(fragments.get("BOOK_LIST"));
         fm.commit();
 
     }
@@ -86,17 +91,11 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         myToolbar.setNavigationIcon(R.drawable.burger_menu_icon);
 
         categoriesDrawer = findViewById(R.id.drawer_layout);
-        myToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!categoriesDrawer.isDrawerOpen(GravityCompat.START)) {
-                    categoriesDrawer.openDrawer(GravityCompat.START);
-                } else {
-                    categoriesDrawer.closeDrawer(GravityCompat.END);
-                }
-            }
-        });
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        Button filter = categoriesDrawer.findViewById(R.id.filter);
+        //TODO - dummy search
+        filter.setOnClickListener(v -> {swapFragmentTo("BOOK_LIST", false); categoriesDrawer.closeDrawer(GravityCompat.START);});
+        myToolbar.setNavigationOnClickListener(v -> activateDrawer());
+        if(getSupportActionBar()!=null) {getSupportActionBar().setDisplayHomeAsUpEnabled(true);}
     }
 
     @Override
@@ -106,21 +105,21 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         final Menu men = menu;
         final MenuItem logout = menu.findItem(R.id.logout);
         logout.setOnMenuItemClickListener(
-                new MenuItem.OnMenuItemClickListener() {
-                    @Override
-                    public boolean onMenuItemClick(MenuItem item) {
-                        Toast.makeText(self, "Bye, " + PreferenceManager.getDefaultSharedPreferences(self).getString("pref_userName", null),
-                                Toast.LENGTH_SHORT).show();
-                        SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(self).edit();
-                        edit.putString("pref_userName", null);
-                        edit.commit();
-                        refreshData();
-                        men.findItem(R.id.login).setVisible(true);
-                        logout.setVisible(false);
-                        return true;
-                    }
-                });
+                item -> logoutAndRefresh(men, logout));
         return super.onCreateOptionsMenu(menu);
+    }
+
+    @SuppressLint("ApplySharedPref")
+    public boolean logoutAndRefresh(Menu men, MenuItem logout) {
+        Toast.makeText(self, "Bye, " + PreferenceManager.getDefaultSharedPreferences(self).getString("pref_userName", null),
+                Toast.LENGTH_SHORT).show();
+        SharedPreferences.Editor edit = PreferenceManager.getDefaultSharedPreferences(self).edit();
+        edit.putString("pref_userName", null);
+        edit.commit();
+        refreshData();
+        men.findItem(R.id.login).setVisible(true);
+        logout.setVisible(false);
+        return true;
     }
 
     @Override
@@ -138,28 +137,24 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     }
 
     private void refreshData() {
-        homeFragment.refreshData();
+        HomeFragment home = (HomeFragment) getSupportFragmentManager().findFragmentByTag("HOME");
+        home.refreshData();
     }
 
-    @Override
-    public void onHomeFragmentInteraction(Uri uri) {
-        Toast.makeText(this, uri.toString(), Toast.LENGTH_SHORT).show();
-    }
 
     @Override
-    public void onHomeFragmentInteraction(Uri uri, Object data) {
+    public void onHomeFragmentInteraction(@NonNull Uri uri, Object data) {
+        if(uri.getPath()==null){
+            return;
+        }
         String[] segments = uri.getPath().split("/");
-        System.out.println(segments[2]);
         if (segments.length > 2) {
             switch (segments[2]) {
                 case "displayBook": {
                     Book b = (Book) data;
-                    boolean isNew = false;
-                    if (bookDetailsFragment == null) {
-                        bookDetailsFragment = new BookDetailsFragment();
-                    }
+                    BookDetailsFragment bookDetailsFragment = (BookDetailsFragment) getSupportFragmentManager().findFragmentByTag("DETAILS");
                     bookDetailsFragment.setBook(b);
-                    swapFragmentTo(bookDetailsFragment, isNew);
+                    swapFragmentTo(bookDetailsFragment, false);
                     break;
                 }
             }
@@ -168,47 +163,58 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
 
     @Override
     public void setHomeIcon() {
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.burger_menu_icon);
+        if(getSupportActionBar()!=null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.burger_menu_icon);
 
-        categoriesDrawer = findViewById(R.id.drawer_layout);
-        myToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (!categoriesDrawer.isDrawerOpen(GravityCompat.START)) {
-                    categoriesDrawer.openDrawer(GravityCompat.START);
-                } else {
-                    categoriesDrawer.closeDrawer(GravityCompat.END);
+            categoriesDrawer = findViewById(R.id.drawer_layout);
+            myToolbar.setNavigationOnClickListener(v -> activateDrawer());
+        }
+    }
+
+    private void activateDrawer() {
+        if (!categoriesDrawer.isDrawerOpen(GravityCompat.START)) {
+            categoriesDrawer.openDrawer(GravityCompat.START);
+        } else {
+            categoriesDrawer.closeDrawer(GravityCompat.END);
+        }
+    }
+
+    private void swapFragmentTo(Fragment fragment, boolean isBack) {
+        FragmentManager fm = getSupportFragmentManager();
+        FragmentTransaction ft = fm.beginTransaction();
+        List<Fragment> fragments = fm.getFragments();
+        for (Fragment f : fragments) {
+            if(!f.isDetached()){
+                ft.detach(f);
+                if(!isBack){
+                    ft.addToBackStack(f.getTag());
+                    setHomeAsUp();
                 }
             }
-        });
-    }
-
-    private void swapFragmentTo(Fragment bookDetailsFragment, boolean isNew) {
-        FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-        ft.detach(homeFragment);
-        if (isNew) {
-            ft.add(R.id.page_content, bookDetailsFragment);
-            ft.detach(bookDetailsFragment);
         }
-        ft.attach(bookDetailsFragment);
-        ft.addToBackStack(null);
+        ft.attach(fragment);
         ft.commit();
-        setHomeAsUp();
-        currentFragment = bookDetailsFragment;
     }
-
+    public void swapFragmentTo(String tag, boolean isBack) {
+        FragmentManager fm = getSupportFragmentManager();
+        swapFragmentTo(fm.findFragmentByTag(tag),isBack);
+    }
     @Override
     public void onBackPressed() {
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
-        if (currentFragment != null) {
-            ft.detach(currentFragment);
-            currentFragment = null;
+        List<Fragment> fragments = fm.getFragments();
+        for (Fragment f : fragments) {
+            if(!f.isDetached()){
+                ft.detach(f);
+            }
         }
         fm.popBackStackImmediate();
         ft.commit();
-        setHomeIcon();
+        if(fm.getBackStackEntryCount()==0) {
+            setHomeIcon();
+        }
     }
 
     @Override
@@ -224,14 +230,13 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     @Override
     public void setHomeAsUp() {
         myToolbar.setNavigationOnClickListener((v) -> onBackPressed());
-        getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_action_back);
+        if(getSupportActionBar()!=null) {
+            getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_action_back);
+        }
     }
 
-    public void launchCategoriesFragment() {
-        if (categoriesFragment != null) {
-            swapFragmentTo(categoriesFragment, false);
-        } else {
-            swapFragmentTo(categoriesFragment, true);
-        }
+    @Override
+    public void onListFragmentInteraction(Book item) {
+
     }
 }
