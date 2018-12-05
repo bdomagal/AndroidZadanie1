@@ -3,6 +3,7 @@ package com.semestr2.bartek.androidzadanie1.books;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.View;
@@ -16,10 +17,12 @@ import java.util.ArrayList;
 class BookGalleryAdapter extends PagerAdapter{
 
     private ArrayList<Bitmap> data;
-    private BookDetailsFragment mContext;
+    private BookFragment mContext;
     private final ViewPager parent;
+    private Book b;
 
-    BookGalleryAdapter(BookDetailsFragment context, Book b, ViewPager parent) {
+    BookGalleryAdapter(BookFragment context, Book b, ViewPager parent) {
+        this.b = b;
         mContext = context;
         this.parent = parent;
         data = new ArrayList<>();
@@ -49,6 +52,7 @@ class BookGalleryAdapter extends PagerAdapter{
         ViewGroup layout = (ViewGroup)mContext.getLayoutInflater().inflate(R.layout.galery_item, container, false);
         ImageView image = layout.findViewById(R.id.galery_item_image);
         image.setImageBitmap(data.get(position));
+        image.setOnClickListener((v)-> mContext.getDetails(b));
         image.setOnLongClickListener((v)-> false);
         container.addView(layout);
         (layout.findViewById(R.id.galery_left)).setOnClickListener((v) ->parent.setCurrentItem((position-1)>=0? position-1 : data.size()-1,true));

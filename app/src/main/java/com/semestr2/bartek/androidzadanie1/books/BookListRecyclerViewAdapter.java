@@ -1,25 +1,33 @@
 package com.semestr2.bartek.androidzadanie1.books;
 
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
+import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import com.semestr2.bartek.androidzadanie1.R;
-import com.semestr2.bartek.androidzadanie1.books.BookListFragment.OnListFragmentInteractionListener;
+import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
 import java.util.List;
 
 public class BookListRecyclerViewAdapter extends RecyclerView.Adapter<BookListRecyclerViewAdapter.ViewHolder> {
 
     private final List<Book> mValues;
-    private final OnListFragmentInteractionListener mListener;
+    private final OnFragmentInteractionListener mListener;
+    private final BookFragment context;
 
-    BookListRecyclerViewAdapter(List<Book> items, OnListFragmentInteractionListener listener) {
+    BookListRecyclerViewAdapter(List<Book> items, OnFragmentInteractionListener listener, BookFragment fragment) {
         mValues = items;
         mListener = listener;
+        context = fragment;
     }
 
     @NonNull
@@ -33,14 +41,14 @@ public class BookListRecyclerViewAdapter extends RecyclerView.Adapter<BookListRe
     @Override
     public void onBindViewHolder(@NonNull final ViewHolder holder, int position) {
         holder.mItem = mValues.get(position);
-        holder.mIdView.setText(mValues.get(position).getTitle());
-        holder.mContentView.setText(mValues.get(position).getAuthor());
-
-        holder.mView.setOnClickListener(v -> {
+        holder.pager.setAdapter(new BookGalleryAdapter(context, mValues.get(position), holder.pager));
+        holder.mCart.setOnClickListener(v -> {
             if (null != mListener) {
                 mListener.onListFragmentInteraction(holder.mItem);
             }
         });
+
+        holder.price.setText("Cena: " + mValues.get(position).getPrice());
     }
 
     @Override
@@ -50,20 +58,18 @@ public class BookListRecyclerViewAdapter extends RecyclerView.Adapter<BookListRe
 
     public class ViewHolder extends RecyclerView.ViewHolder {
         final View mView;
-        final TextView mIdView;
-        final TextView mContentView;
+        final ViewPager pager;
         Book mItem;
+        final ImageButton mCart;
+        final TextView price;
 
         ViewHolder(View view) {
             super(view);
             mView = view;
-            mIdView = view.findViewById(R.id.item_number);
-            mContentView = view.findViewById(R.id.content);
+            pager = view.findViewById(R.id.book_item_pager);
+            mCart = view.findViewById(R.id.add);
+            price = view.findViewById(R.id.price);
         }
 
-        @Override
-        public String toString() {
-            return super.toString() + " '" + mContentView.getText() + "'";
-        }
     }
 }

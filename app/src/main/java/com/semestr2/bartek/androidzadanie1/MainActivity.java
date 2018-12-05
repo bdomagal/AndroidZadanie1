@@ -19,10 +19,13 @@ import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.semestr2.bartek.androidzadanie1.basket.BookOrderDialogBuilder;
+import com.semestr2.bartek.androidzadanie1.books.BigGalleryFragment;
 import com.semestr2.bartek.androidzadanie1.books.Book;
 import com.semestr2.bartek.androidzadanie1.books.BookListFragment;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesArrayAdapter;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesFragment;
+import com.semestr2.bartek.androidzadanie1.categories.Category;
 import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.books.BookDetailsFragment;
 import com.semestr2.bartek.androidzadanie1.home.HomeFragment;
@@ -32,12 +35,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity implements HomeFragment.OnHomeFragmentInteractionListener, OnFragmentInteractionListener, BookListFragment.OnListFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity implements HomeFragment.OnHomeFragmentInteractionListener, OnFragmentInteractionListener {
     final private MainActivity self = this;
     private DrawerLayout categoriesDrawer;
     private MyToolbar myToolbar;
     private DatabaseAccess databaseAccess;
     private Map<String, Fragment> fragments = new HashMap<>();
+    private CategoriesArrayAdapter filtersAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +68,9 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         fm.detach(fragments.get("DETAILS"));
         fm.detach(fragments.get("CATEGORIES"));
         fm.detach(fragments.get("BOOK_LIST"));
+        fragments.put("GALLERY_FRAG", new BigGalleryFragment());
+        fm.add(R.id.page_content, fragments.get("GALLERY_FRAG"), "GALLERY_FRAG");
+        fm.detach(fragments.get("GALLERY_FRAG"));
         fm.commit();
 
     }
@@ -82,7 +89,8 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
     private void loadCategoriesList(DatabaseAccess databaseAccess) {
         ListView categoriesList = findViewById(R.id.categories_drawer);
         categoriesList.setOnItemClickListener(new CategoriesArrayAdapter.OnItemClickListener());
-        categoriesList.setAdapter(new CategoriesArrayAdapter(this, databaseAccess.getCategories()));
+        filtersAdapter = new CategoriesArrayAdapter(this, databaseAccess.getCategories());
+        categoriesList.setAdapter(filtersAdapter);
     }
 
     private void setupToolbar() {
@@ -93,7 +101,10 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         categoriesDrawer = findViewById(R.id.drawer_layout);
         Button filter = categoriesDrawer.findViewById(R.id.filter);
         //TODO - dummy search
-        filter.setOnClickListener(v -> {swapFragmentTo("BOOK_LIST", false); categoriesDrawer.closeDrawer(GravityCompat.START);});
+        filter.setOnClickListener(v -> {
+            BookListFragment blf = (BookListFragment) fragments.get("BOOK_LIST");
+            blf.setData(databaseAccess.findFilteredBooks(filtersAdapter.getData()));
+            swapFragmentTo("BOOK_LIST", false); categoriesDrawer.closeDrawer(GravityCompat.START);});
         myToolbar.setNavigationOnClickListener(v -> activateDrawer());
         if(getSupportActionBar()!=null) {getSupportActionBar().setDisplayHomeAsUpEnabled(true);}
     }
@@ -207,6 +218,9 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         List<Fragment> fragments = fm.getFragments();
         for (Fragment f : fragments) {
             if(!f.isDetached()){
+                if(f.getTag().equals("HOME")){
+                    finish();
+                }
                 ft.detach(f);
             }
         }
@@ -237,6 +251,21 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
 
     @Override
     public void onListFragmentInteraction(Book item) {
-
+        BookOrderDialogBuilder.showOrderDialog(this, item, this, findViewById(R.id.page_content));
     }
+
+    @Override
+    public void onDisplayDetailsListener(Book book) {
+        BookDetailsFragment bdf = (BookDetailsFragment) fragments.get("DETAILS");
+        bdf.setBook(book);
+        swapFragmentTo("DETAILS", false);
+    }
+
+    @Override
+    public void displayBigGallery(Book book) {
+        BigGalleryFragment bdf = (BigGalleryFragment) fragments.get("GALLERY_FRAG");
+        bdf.setBook(book);
+        swapFragmentTo("GALLERY_FRAG", false);
+    }
+
 }

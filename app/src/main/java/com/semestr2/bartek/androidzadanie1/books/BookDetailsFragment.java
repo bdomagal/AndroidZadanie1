@@ -9,12 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.semestr2.bartek.androidzadanie1.R;
 import com.semestr2.bartek.androidzadanie1.basket.BookOrderDialogBuilder;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
-public class BookDetailsFragment extends Fragment {
+public class BookDetailsFragment extends BookFragment {
     private Book mBook;
 
     private OnFragmentInteractionListener mListener;
@@ -36,9 +37,10 @@ public class BookDetailsFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_product_details, container, false);
         ViewPager galery = v.findViewById(R.id.book_galery);
         galery.setAdapter(new BookGalleryAdapter(this, mBook, galery));
-        mListener.setHomeAsUp();
         Button button = v.findViewById(R.id.add_to_basket);
         button.setOnClickListener((e)-> BookOrderDialogBuilder.showOrderDialog(getContext(), mBook, mListener, container));
+        TextView price = v.findViewById(R.id.price);
+        price.setText("Cena: " + mBook.getPrice());
         return v;
     }
 
@@ -65,4 +67,8 @@ public class BookDetailsFragment extends Fragment {
     }
 
 
+    @Override
+    public void getDetails(Book book) {
+        mListener.displayBigGallery(book);
+    }
 }

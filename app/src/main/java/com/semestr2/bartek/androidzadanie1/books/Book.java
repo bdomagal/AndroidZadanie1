@@ -10,6 +10,19 @@ public class Book implements Serializable {
     private byte[] altCover;
     private double price;
     private int amount;
+    private boolean liked;
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public boolean isLiked() {
+        return liked;
+    }
+
+    public void setLiked(boolean liked) {
+        this.liked = liked;
+    }
 
     public int getAmount() {
         return amount;

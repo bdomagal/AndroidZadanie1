@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.semestr2.bartek.androidzadanie1.R;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class CategoriesArrayAdapter extends ArrayAdapter<Category> {
 
@@ -56,6 +57,10 @@ public class CategoriesArrayAdapter extends ArrayAdapter<Category> {
         }
 
         return rowView;
+    }
+
+    public Collection<Category> getData() {
+        return objects;
     }
 
     public static class OnItemClickListener implements AdapterView.OnItemClickListener {

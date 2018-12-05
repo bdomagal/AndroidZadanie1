@@ -8,6 +8,10 @@ public interface OnFragmentInteractionListener {
     void onBookDetailsInteraction(Uri uri);
     void onAddToCartListener(Book book, boolean isBuyNow);
     void setHomeAsUp();
+    void onListFragmentInteraction(Book book);
+    void onDisplayDetailsListener(Book book);
 
-   // void markFavourite();
+    void displayBigGallery(Book book);
+
+    // void markFavourite();
 }

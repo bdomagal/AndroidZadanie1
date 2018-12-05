@@ -10,6 +10,7 @@ import com.semestr2.bartek.androidzadanie1.books.Book;
 import com.semestr2.bartek.androidzadanie1.categories.Category;
 
 import java.util.ArrayList;
+import java.util.Collection;
 
 public class DatabaseAccess {
     private SQLiteOpenHelper openHelper;
@@ -143,5 +144,26 @@ public class DatabaseAccess {
 
         return recs;
 
+    }
+
+    public ArrayList<Book> findFilteredBooks(Collection<Category> data) {
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Book WHERE ");
+        ArrayList<Book> list = new ArrayList<>();
+        boolean any = true;
+        for (Category datum : data) {
+            if(datum.isChecked()){
+                queryBuilder.append(String.format("Genre = '%s' OR ", datum.getName()));
+                any = false;
+            }
+        }
+        String query = any ? "SELECT * FROM Book" : queryBuilder.toString().substring(0, queryBuilder.length()-3);
+        Cursor cursor = database.rawQuery(query, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast()) {
+            list.add(new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3)));
+            cursor.moveToNext();
+        }
+        cursor.close();
+        return list;
     }
 }

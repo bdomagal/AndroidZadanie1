@@ -49,7 +49,7 @@ public class Category {
         this.image = image;
     }
 
-    void toggle() {
+    public void toggle() {
         checked = !checked;
     }
 }
