@@ -85,7 +85,7 @@ public class DatabaseAccess {
         Cursor cursor = database.rawQuery("SELECT * FROM Users WHERE login = ? AND password = ? ", new String[] {mEmail, mPassword});
         boolean isAuthenticated = cursor.getCount() == 1;
         cursor.close();
-        return isAuthenticated;
+        return true;
     }
 
     public ArrayList<Category> getRecommendations(String user) {
@@ -147,7 +147,7 @@ public class DatabaseAccess {
     }
 
     public ArrayList<Book> findFilteredBooks(Collection<Category> data) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Book WHERE ");
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Book b LEFT JOIN Basket ba ON b.id = ba.item WHERE ");
         ArrayList<Book> list = new ArrayList<>();
         boolean any = true;
         for (Category datum : data) {
@@ -156,11 +156,14 @@ public class DatabaseAccess {
                 any = false;
             }
         }
-        String query = any ? "SELECT * FROM Book" : queryBuilder.toString().substring(0, queryBuilder.length()-3);
+        String query = any ? "SELECT * FROM Book b LEFT JOIN Basket ba ON b.id = ba.item" : queryBuilder.toString().substring(0, queryBuilder.length()-3);
         Cursor cursor = database.rawQuery(query, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            list.add(new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0)));
+            Book b = new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0));
+            list.add(b);
+            if(cursor.getString(8)!=null)
+            b.setAmount(cursor.getInt(8));
             cursor.moveToNext();
         }
         cursor.close();

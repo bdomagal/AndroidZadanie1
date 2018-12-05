@@ -22,12 +22,14 @@ public class CategoriesArrayAdapter extends ArrayAdapter<Category> {
 
     private final Activity context;
     private final ArrayList<Category> objects;
+    private CategoriesArrayAdapter self;
 
     public CategoriesArrayAdapter(@NonNull Activity context, @NonNull ArrayList<Category> objects) {
         super(context, R.layout.categories_drawer_item, objects);
 
         this.objects = objects;
         this.context = context;
+        self = this;
     }
 
     @NonNull
@@ -55,7 +57,12 @@ public class CategoriesArrayAdapter extends ArrayAdapter<Category> {
             imageView.setAdjustViewBounds(true);
             imageView.setImageBitmap(BitmapFactory.decodeByteArray(item.getImage(), 0, item.getImage().length));
         }
-
+        rowView.setOnClickListener(v -> {
+            CheckBox cb = v.findViewById(R.id.genre_select);
+            Category c = objects.get(position);
+            c.toggle();
+            cb.toggle();
+        });
         return rowView;
     }
 
@@ -67,10 +74,8 @@ public class CategoriesArrayAdapter extends ArrayAdapter<Category> {
 
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int i, long l){
-            CheckBox cb = view.findViewById(R.id.genre_select);
-            Category c = (Category) adapterView.getItemAtPosition(i);
-            c.toggle();
-            cb.toggle();
+
+            System.out.println("ping");
         }
     }
 }

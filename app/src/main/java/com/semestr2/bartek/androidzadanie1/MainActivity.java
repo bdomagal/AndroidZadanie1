@@ -92,8 +92,8 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
 
     private void loadCategoriesList(DatabaseAccess databaseAccess) {
         ListView categoriesList = findViewById(R.id.categories_drawer);
-        categoriesList.setOnItemClickListener(new CategoriesArrayAdapter.OnItemClickListener());
         filtersAdapter = new CategoriesArrayAdapter(this, databaseAccess.getCategories());
+        //categoriesList.setOnItemClickListener(new CategoriesArrayAdapter.OnItemClickListener());
         categoriesList.setAdapter(filtersAdapter);
     }
 

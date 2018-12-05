@@ -1,15 +1,11 @@
 package com.semestr2.bartek.androidzadanie1.books;
 
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
@@ -47,7 +43,11 @@ public class BookListRecyclerViewAdapter extends RecyclerView.Adapter<BookListRe
                 mListener.onListFragmentInteraction(holder.mItem);
             }
         });
-
+        if(holder.mItem.getAmount()!=0)
+        holder.amount.setText(String.format("Ilość w koszyku : %d", holder.mItem.getAmount()));
+        else{
+            holder.amount.setText("");
+        }
         holder.price.setText("Cena: " + mValues.get(position).getPrice());
     }
 
@@ -62,6 +62,7 @@ public class BookListRecyclerViewAdapter extends RecyclerView.Adapter<BookListRe
         Book mItem;
         final ImageButton mCart;
         final TextView price;
+        final TextView amount;
 
         ViewHolder(View view) {
             super(view);
@@ -69,6 +70,7 @@ public class BookListRecyclerViewAdapter extends RecyclerView.Adapter<BookListRe
             pager = view.findViewById(R.id.book_item_pager);
             mCart = view.findViewById(R.id.add);
             price = view.findViewById(R.id.price);
+            amount = view.findViewById(R.id.amount);
         }
 
     }
