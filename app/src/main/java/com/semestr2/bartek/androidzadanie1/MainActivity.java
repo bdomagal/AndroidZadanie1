@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
@@ -12,24 +13,24 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.semestr2.bartek.androidzadanie1.basket.Basket;
 import com.semestr2.bartek.androidzadanie1.basket.BookOrderDialogBuilder;
 import com.semestr2.bartek.androidzadanie1.books.BigGalleryFragment;
 import com.semestr2.bartek.androidzadanie1.books.Book;
+import com.semestr2.bartek.androidzadanie1.books.BookDetailsFragment;
 import com.semestr2.bartek.androidzadanie1.books.BookListFragment;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesArrayAdapter;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesFragment;
-import com.semestr2.bartek.androidzadanie1.categories.Category;
 import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
-import com.semestr2.bartek.androidzadanie1.books.BookDetailsFragment;
-import com.semestr2.bartek.androidzadanie1.home.HomeFragment;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
+import com.semestr2.bartek.androidzadanie1.home.HomeFragment;
 
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,9 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         fragments.put("GALLERY_FRAG", new BigGalleryFragment());
         fm.add(R.id.page_content, fragments.get("GALLERY_FRAG"), "GALLERY_FRAG");
         fm.detach(fragments.get("GALLERY_FRAG"));
+        fragments.put("BASKET", new Basket());
+        fm.add(R.id.page_content, fragments.get("BASKET"), "BASKET");
+        fm.detach(fragments.get("BASKET"));
         fm.commit();
 
     }
@@ -195,10 +199,12 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
         List<Fragment> fragments = fm.getFragments();
+        Fragment current;
         for (Fragment f : fragments) {
             if(!f.isDetached()){
+                current = f;
                 ft.detach(f);
-                if(!isBack){
+                if(!isBack && current!=fragment){
                     ft.addToBackStack(f.getTag());
                     setHomeAsUp();
                 }
@@ -268,4 +274,12 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         swapFragmentTo("GALLERY_FRAG", false);
     }
 
+
+    public void openDrawer(View v){
+        if (!categoriesDrawer.isDrawerOpen(GravityCompat.START)) {
+            categoriesDrawer.openDrawer(GravityCompat.START);
+        } else {
+            categoriesDrawer.closeDrawer(GravityCompat.END);
+        }
+    }
 }

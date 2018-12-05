@@ -1,8 +1,21 @@
 package com.semestr2.bartek.androidzadanie1.books;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+
 import java.io.Serializable;
 
 public class Book implements Serializable {
+    private int id;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     private String title;
     private String author;
     private String genre;
@@ -32,13 +45,14 @@ public class Book implements Serializable {
         this.amount = amount;
     }
 
-    public Book(String title, String author, String genre, byte[] cover, byte[] altCover, double price) {
+    public Book(String title, String author, String genre, byte[] cover, byte[] altCover, double price, int id) {
         this.title = title;
         this.author = author;
         this.genre = genre;
         this.cover = cover;
         this.altCover = altCover;
         this.price = price;
+        this.id = id;
     }
 
     public Book(Book b, int amount){
@@ -48,6 +62,7 @@ public class Book implements Serializable {
         this.cover = b.cover;
         this.altCover = b.altCover;
         this.price = b.price;
+        this.id = b.id;
         this.amount = amount;
     }
 
@@ -97,5 +112,16 @@ public class Book implements Serializable {
 
     public double getPrice() {
         return price;
+    }
+
+    public Bitmap getCoverAsBitmap() {
+        if(getCover()!=null)
+        return BitmapFactory.decodeByteArray(getCover(), 0,getCover().length);
+        else return null;
+    }
+    public Bitmap getAltCoverAsBitmap() {
+        if(getAltCover()!=null)
+            return BitmapFactory.decodeByteArray(getAltCover(), 0,getAltCover().length);
+        else return null;
     }
 }

@@ -10,20 +10,21 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.semestr2.bartek.androidzadanie1.R;
 import com.semestr2.bartek.androidzadanie1.books.Book;
+import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
 public class BookOrderDialogBuilder {
     public static void showOrderDialog(Context ctx, Book mBook, OnFragmentInteractionListener mListener, ViewGroup parent) {
-        final Book b = new Book(mBook, 0);
+        DatabaseAccess instance = DatabaseAccess.getInstance(ctx);
+        final Book b = instance.getBasketItem(mBook);
         Dialog dialog = new Dialog(ctx);
         View d = dialog.getLayoutInflater().inflate(R.layout.book_order, parent, false);
         Button add = d.findViewById(R.id.add_to_cart);
         Button buy = d.findViewById(R.id.buy_now);
-        add.setClickable(false);
-        buy.setClickable(false);
         TextView t = d.findViewById(R.id.book_order_dialog_title);
         t.setText(mBook.getTitle());
         TextView p = d.findViewById(R.id.price);
@@ -46,14 +47,20 @@ public class BookOrderDialogBuilder {
             public void afterTextChanged(Editable s) {
                 if(s.length()>0 && Integer.parseInt(s.toString())>0) {
                     int amount = Integer.parseInt(s.toString());
+                    b.setAmount(amount);
                     add.setClickable(true);
                     add.setBackgroundColor(ctx.getResources().getColor(R.color.colorPrimary));
+                    add.setOnClickListener(v -> {
+                        instance.addToBasket(b);
+                        dialog.dismiss();
+                        Toast.makeText(ctx, "Dodano " + b.getTitle() + " x " + b.getAmount() + "do koszyka", Toast.LENGTH_SHORT);
+                    });
                     buy.setClickable(true);
                     buy.setBackgroundColor(ctx.getResources().getColor(R.color.colorPrimary));
-                    total.setText(String.format(ctx.getResources().getString(R.string.price_for_book), amount * mBook.getPrice() + ""));
-                    b.setAmount(amount);
+                    total.setText(String.format(ctx.getResources().getString(R.string.price_for_book), amount * b.getPrice() + ""));
                 }else{
-                    total.setText("0");
+                    b.setAmount(0);
+                    total.setText(String.format(ctx.getResources().getString(R.string.price_for_book), 0 * b.getPrice() + ""));
                     add.setClickable(false);
                     add.setBackgroundColor(ctx.getResources().getColor(R.color.grey));
                     buy.setClickable(false);
@@ -62,7 +69,6 @@ public class BookOrderDialogBuilder {
             }
         });
         Button close = d.findViewById(R.id.close_dialog);
-
         buy.setBackgroundColor(ctx.getResources().getColor(R.color.grey));
         add.setBackgroundColor(ctx.getResources().getColor(R.color.grey));
         close.setBackgroundColor(ctx.getResources().getColor(R.color.red));
@@ -71,6 +77,7 @@ public class BookOrderDialogBuilder {
         add.setOnClickListener((v1 -> mListener.onAddToCartListener(b, false)));
         dialog.setContentView(d);
         dialog.show();
+        input.setText(b.getAmount()+"");
     }
 
 }

@@ -3,20 +3,17 @@ package com.semestr2.bartek.androidzadanie1.books;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import com.semestr2.bartek.androidzadanie1.R;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A fragment representing a list of Items.
@@ -47,9 +44,10 @@ public class BookListFragment extends BookFragment {
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_book_list, container, false);
 
-        if (view instanceof RecyclerView) {
+        if (view.findViewById(R.id.list) instanceof RecyclerView) {
             Context context = view.getContext();
-            RecyclerView recyclerView = (RecyclerView) view;
+            RecyclerView recyclerView =  view.findViewById(R.id.list);
+            //Log.e("REC", String.valueOf(recyclerView));
             if (mColumnCount <= 1) {
                 recyclerView.setLayoutManager(new LinearLayoutManager(context));
             } else {
@@ -61,11 +59,18 @@ public class BookListFragment extends BookFragment {
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
                     super.onScrollStateChanged(recyclerView, newState);
                     if(newState == RecyclerView.SCROLL_STATE_IDLE){
-                        recyclerView.smoothScrollToPosition(((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstVisibleItemPosition());
+                        recyclerView.smoothScrollToPosition(((LinearLayoutManager)recyclerView.getLayoutManager()).findFirstCompletelyVisibleItemPosition());
                     }
                 }
             });
 
+        }
+        if(bookList.isEmpty()){
+            view.findViewById(R.id.list).setVisibility(View.GONE);
+            //view.findViewById(R.id.empty).setVisibility(View.VISIBLE);
+        }else{
+            view.findViewById(R.id.list).setVisibility(View.VISIBLE);
+            //view.findViewById(R.id.empty).setVisibility(View.GONE);
         }
         return view;
     }

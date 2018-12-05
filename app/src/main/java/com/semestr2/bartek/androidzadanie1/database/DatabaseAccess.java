@@ -73,7 +73,7 @@ public class DatabaseAccess {
             Cursor cursor = database.rawQuery("SELECT * FROM Book", null);
             cursor.moveToFirst();
             while (!cursor.isAfterLast()) {
-                list.add(new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3)));
+                list.add(new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0)));
                 cursor.moveToNext();
             }
             cursor.close();
@@ -160,10 +160,54 @@ public class DatabaseAccess {
         Cursor cursor = database.rawQuery(query, null);
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
-            list.add(new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3)));
+            list.add(new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0)));
             cursor.moveToNext();
         }
         cursor.close();
+        return list;
+    }
+
+    public Book getBasketItem(Book mBook) {
+        String query = "SELECT count FROM Basket WHERE item = " + mBook.getId();
+        Cursor cursor = database.rawQuery(query, null);
+        cursor.moveToFirst();
+        if(cursor.getCount()==1){
+            int amount = cursor.getInt(0);
+            cursor.close();
+            return new Book(mBook, amount);
+        }
+        else{
+            cursor.close();
+            return new Book(mBook, 0);
+        }
+    }
+
+    public void addToBasket(Book b) {
+        if(b.getAmount()==0){
+            database.delete("Basket", "item = ?", new String[]{b.getId()+""});
+        }
+        else{
+            ContentValues cv = new ContentValues();
+            cv.put("item", b.getId());
+            cv.put("count", b.getAmount());
+            int id = (int) database.insertWithOnConflict("Basket", null, cv, SQLiteDatabase.CONFLICT_IGNORE);
+            if (id == -1) {
+                database.update("Basket", cv, "item=?", new String[] {b.getId()+""});
+            }
+        }
+    }
+
+    public ArrayList<Book> getBasketItems() {
+        ArrayList<Book> list = new ArrayList<>();
+        String query = "SELECT * FROM Book b JOIN Basket ba ON b.id = ba.item";
+        Cursor cursor = database.rawQuery(query, null);
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast() && !cursor.isBeforeFirst()) {
+            Book b = new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0));
+            b.setAmount(cursor.getInt(8));
+            list.add(b);
+            cursor.moveToNext();
+        }
         return list;
     }
 }
