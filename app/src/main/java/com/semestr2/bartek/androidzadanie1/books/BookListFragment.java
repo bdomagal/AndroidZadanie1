@@ -2,6 +2,7 @@ package com.semestr2.bartek.androidzadanie1.books;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -11,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.semestr2.bartek.androidzadanie1.R;
+import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
 import java.util.ArrayList;
@@ -53,7 +55,12 @@ public class BookListFragment extends BookFragment {
             } else {
                 recyclerView.setLayoutManager(new GridLayoutManager(context, mColumnCount));
             }
-            recyclerView.setAdapter(new BookListRecyclerViewAdapter(bookList, mListener, this));
+            if(PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("display_galeries_in_list", false)) {
+                recyclerView.setAdapter(new BookListRecyclerViewAdapter(bookList, mListener, this));
+            }
+            else{
+                recyclerView.setAdapter(new SmallBookListRecyclerViewAdapter(bookList, mListener, this));
+            }
             recyclerView.setOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
@@ -101,4 +108,5 @@ public class BookListFragment extends BookFragment {
     public void getDetails(Book book) {
         mListener.onDisplayDetailsListener(book);
     }
+
 }

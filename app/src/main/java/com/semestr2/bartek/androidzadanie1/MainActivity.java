@@ -28,9 +28,12 @@ import com.semestr2.bartek.androidzadanie1.books.BookDetailsFragment;
 import com.semestr2.bartek.androidzadanie1.books.BookListFragment;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesArrayAdapter;
 import com.semestr2.bartek.androidzadanie1.categories.CategoriesFragment;
+import com.semestr2.bartek.androidzadanie1.categories.Category;
+import com.semestr2.bartek.androidzadanie1.categories.Favourites;
 import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 import com.semestr2.bartek.androidzadanie1.home.HomeFragment;
+import com.semestr2.bartek.androidzadanie1.settings.SettingsFragment;
 
 import java.util.HashMap;
 import java.util.List;
@@ -75,6 +78,12 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         fragments.put("BASKET", new Basket());
         fm.add(R.id.page_content, fragments.get("BASKET"), "BASKET");
         fm.detach(fragments.get("BASKET"));
+        fragments.put("FAVOURITES", new Favourites());
+        fm.add(R.id.page_content, fragments.get("FAVOURITES"), "FAVOURITES");
+        fm.detach(fragments.get("FAVOURITES"));
+        fragments.put("SETTINGS", new SettingsFragment());
+        fm.add(R.id.page_content, fragments.get("SETTINGS"), "SETTINGS");
+        fm.detach(fragments.get("SETTINGS"));
         fm.commit();
 
     }
@@ -104,10 +113,9 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
 
         categoriesDrawer = findViewById(R.id.drawer_layout);
         Button filter = categoriesDrawer.findViewById(R.id.filter);
-        //TODO - dummy search
         filter.setOnClickListener(v -> {
             BookListFragment blf = (BookListFragment) fragments.get("BOOK_LIST");
-            blf.setData(databaseAccess.findFilteredBooks(filtersAdapter.getData()));
+            blf.setData(databaseAccess.findFilteredBooks(filtersAdapter.getData(), PreferenceManager.getDefaultSharedPreferences(self).getString("pref_userName", null)));
             swapFragmentTo("BOOK_LIST", false); categoriesDrawer.closeDrawer(GravityCompat.START);});
         myToolbar.setNavigationOnClickListener(v -> activateDrawer());
         if(getSupportActionBar()!=null) {getSupportActionBar().setDisplayHomeAsUpEnabled(true);}
@@ -230,7 +238,8 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
                 ft.detach(f);
             }
         }
-        fm.popBackStackImmediate();
+        fm.popBackStack();
+        //fm.popBackStackImmediate();
         ft.commit();
         if(fm.getBackStackEntryCount()==0) {
             setHomeIcon();
@@ -257,7 +266,17 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
 
     @Override
     public void onListFragmentInteraction(Book item) {
-        BookOrderDialogBuilder.showOrderDialog(this, item, this, findViewById(R.id.page_content));
+        BookOrderDialogBuilder.showOrderDialog(this, item, this, findViewById(R.id.page_content), new BookOrderDialogBuilder.OnBookOrderListener() {
+            @Override
+            public void onBuyNow() {
+                swapFragmentTo("BASKET", false);
+            }
+
+            @Override
+            public void onAddToBasket() {
+                findViewById(R.id.filter).callOnClick();
+            }
+        });
     }
 
     @Override
@@ -272,6 +291,19 @@ public class MainActivity extends AppCompatActivity implements HomeFragment.OnHo
         BigGalleryFragment bdf = (BigGalleryFragment) fragments.get("GALLERY_FRAG");
         bdf.setBook(book);
         swapFragmentTo("GALLERY_FRAG", false);
+    }
+
+    @Override
+    public void onCategoryClick(Category item) {
+        filtersAdapter.reset();
+        filtersAdapter.selectCategory(item);
+        filtersAdapter.notifyDataSetChanged();
+        findViewById(R.id.filter).callOnClick();
+    }
+
+    @Override
+    public void displayBasket() {
+        swapFragmentTo("BASKET", false);
     }
 
 

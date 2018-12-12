@@ -150,10 +150,10 @@ public class Basket extends Fragment {
         public class ViewHolder extends RecyclerView.ViewHolder {
             final View mView;
             final ImageView image;
-            final ImageButton delete;
+            final ImageView delete;
             Book mItem;
-            final ImageButton plus;
-            final Button minus;
+            final ImageView plus;
+            final ImageView minus;
             final TextView title;
             final TextView amount;
             final TextView total;

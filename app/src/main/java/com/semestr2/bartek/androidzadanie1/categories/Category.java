@@ -33,7 +33,7 @@ public class Category {
         this.name = name;
     }
 
-    String getCategoryGroup() {
+    public String getCategoryGroup() {
         return categoryGroup;
     }
 

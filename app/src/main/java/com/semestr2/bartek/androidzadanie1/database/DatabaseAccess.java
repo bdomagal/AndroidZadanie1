@@ -124,6 +124,24 @@ public class DatabaseAccess {
         }
 
     }
+    public void setLike(Book item, boolean b, String user) {
+
+        ContentValues cv = new ContentValues();
+
+        System.out.println(item.getTitle());
+        if(b) {
+            cv.put("user", user);
+            cv.put("books", item.getId());
+            cv.put("stars", 5);
+            database.insert("BookLikes", null, cv);
+            //database.rawQuery("INSERT INTO CategoryLikes (user, category) VALUES (?, ?)", new String[]{user, item.getName()});
+        }
+        else{
+            database.delete("BookLikes", "user = ? AND books = ?", new String[] {user, item.getId()+""});
+            //database.rawQuery("DELETE FROM CategoryLikes WHERE user = ? AND category = ?", new String[]{user, item.getName()});
+        }
+
+    }
 
     public ArrayList<Category> getCategoriesWithLikes(String user) {
         ArrayList<Category> recs = new ArrayList<>();
@@ -146,8 +164,8 @@ public class DatabaseAccess {
 
     }
 
-    public ArrayList<Book> findFilteredBooks(Collection<Category> data) {
-        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Book b LEFT JOIN Basket ba ON b.id = ba.item WHERE ");
+    public ArrayList<Book> findFilteredBooks(Collection<Category> data, String user) {
+        StringBuilder queryBuilder = new StringBuilder("SELECT * FROM Book b LEFT JOIN (SELECT * FROM BookLikes WHERE user = ?) AS bl ON b.id = bl.books LEFT JOIN Basket ba ON b.id = ba.item WHERE ");
         ArrayList<Book> list = new ArrayList<>();
         boolean any = true;
         for (Category datum : data) {
@@ -156,14 +174,15 @@ public class DatabaseAccess {
                 any = false;
             }
         }
-        String query = any ? "SELECT * FROM Book b LEFT JOIN Basket ba ON b.id = ba.item" : queryBuilder.toString().substring(0, queryBuilder.length()-3);
-        Cursor cursor = database.rawQuery(query, null);
+        String query = any ? "SELECT * FROM Book b LEFT JOIN (SELECT * FROM BookLikes WHERE user = ?) AS bl ON b.id = bl.books LEFT JOIN Basket ba ON b.id = ba.item" : queryBuilder.toString().substring(0, queryBuilder.length()-3);
+        Cursor cursor = database.rawQuery(query, new String[]{user});
         cursor.moveToFirst();
         while (!cursor.isAfterLast()) {
             Book b = new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0));
             list.add(b);
-            if(cursor.getString(8)!=null)
-            b.setAmount(cursor.getInt(8));
+            b.setLiked(cursor.getString(7)!=null);
+            if(cursor.getString(11)!=null)
+            b.setAmount(cursor.getInt(11));
             cursor.moveToNext();
         }
         cursor.close();
@@ -212,5 +231,89 @@ public class DatabaseAccess {
             cursor.moveToNext();
         }
         return list;
+    }
+
+    public ArrayList<Category> getFavouriteCategories(String user) {
+        ArrayList<Category> recs = new ArrayList<>();
+        Cursor cursor;
+        if(user!=null) {
+            cursor = database.rawQuery("SELECT * FROM Categories AS c JOIN (SELECT * FROM CategoryLikes WHERE user = ?) AS l ON c.name = l.category", new String[]{user});
+        }else{
+            cursor = database.rawQuery("SELECT * FROM Categories AS c JOIN (SELECT * FROM CategoryLikes WHERE user = null) AS l ON c.name = l.category", null);
+        }
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast() && !cursor.isBeforeFirst()) {
+            Category item = new Category(cursor.getString(0), cursor.getString(1), cursor.getBlob(2));
+            item.setChecked(cursor.getString(4)!=null);
+            recs.add(item);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return recs;
+    }
+
+    public ArrayList<Book> getBooks(String user) {
+        ArrayList<Book> list = new ArrayList<>();
+        Cursor cursor;
+        if(user!=null) {
+            cursor = database.rawQuery("SELECT * FROM Book AS c LEFT JOIN (SELECT * FROM BookLikes WHERE user = ?) AS l ON c.id = l.books", new String[]{user});
+        }else{
+            cursor = database.rawQuery("SELECT * FROM Book AS c LEFT JOIN (SELECT * FROM BookLikes WHERE user = null) AS l ON c.id = l.books", null);
+        }
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast() && !cursor.isBeforeFirst()) {
+            Book b = new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0));
+            b.setLiked(cursor.getString(7)!=null);
+            list.add(b);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return list;
+    }
+    public ArrayList<Book> getFavouriteBooks(String user) {
+        ArrayList<Book> list = new ArrayList<>();
+        Cursor cursor;
+        if(user!=null) {
+            cursor = database.rawQuery("SELECT * FROM Book AS c JOIN (SELECT * FROM BookLikes WHERE user = ?) AS l ON c.id = l.books", new String[]{user});
+        }else{
+            cursor = database.rawQuery("SELECT * FROM Book AS c JOIN (SELECT * FROM BookLikes WHERE user = null) AS l ON c.id = l.books", null);
+        }
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast() && !cursor.isBeforeFirst()) {
+            Book b = new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0));
+            b.setLiked(cursor.getString(7)!=null);
+            list.add(b);
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return list;
+    }
+
+    public Book getBook(String user, int id) {
+        Book book = null;
+        Cursor cursor;
+        if(user!=null) {
+            cursor = database.rawQuery("SELECT * FROM (SELECT * FROM Book WHERE id = ?) AS c LEFT JOIN (SELECT * FROM BookLikes WHERE user = ?) AS l ON c.id = l.books LEFT JOIN Basket ba ON c.id = ba.item", new String[]{id+"", user});
+        }else{
+            cursor = database.rawQuery("SELECT * FROM (SELECT * FROM Book WHERE id = ?) AS c LEFT JOIN (SELECT * FROM BookLikes WHERE user = null) AS l ON c.id = l.books LEFT JOIN Basket ba ON c.id = ba.item", new String[]{id+""});
+        }
+        cursor.moveToFirst();
+        while (!cursor.isAfterLast() && !cursor.isBeforeFirst()) {
+            book = new Book(cursor.getString(1), cursor.getString(2), cursor.getString(5), cursor.getBlob(4), cursor.getBlob(6), cursor.getDouble(3), cursor.getInt(0));
+            book.setLiked(cursor.getString(7)!=null);
+            if(cursor.getString(11)!=null) {
+                book.setAmount(cursor.getInt(11));
+            }
+            else{
+                book.setAmount(0);
+            }
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return book;
     }
 }

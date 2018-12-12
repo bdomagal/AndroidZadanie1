@@ -1,4 +1,4 @@
-package com.semestr2.bartek.androidzadanie1.categories;
+package com.semestr2.bartek.androidzadanie1.favourites;
 
 import android.app.Activity;
 import android.content.Context;
@@ -18,21 +18,23 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.R;
+import com.semestr2.bartek.androidzadanie1.books.Book;
+import com.semestr2.bartek.androidzadanie1.categories.Category;
+import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
 import java.util.ArrayList;
 
 
-public class CategoriesFragment extends Fragment {
+public class FavouriteBooksFragment extends Fragment {
 
     private CategoriesLikesAdapter adapter;
 
     private AppCompatActivity mActivity;
     private OnFragmentInteractionListener mListener;
 
-    public CategoriesFragment() {
+    public FavouriteBooksFragment() {
         // Required empty public constructor
     }
 
@@ -50,7 +52,7 @@ public class CategoriesFragment extends Fragment {
         ListView lv = v.findViewById(R.id.categories_list_view);
 
         adapter = new CategoriesLikesAdapter(mActivity, DatabaseAccess.getInstance(getContext())
-                .getCategoriesWithLikes(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("pref_userName", null)
+                .getFavouriteBooks(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("pref_userName", null)
         ));
         lv.setAdapter(adapter);
 
@@ -77,12 +79,12 @@ public class CategoriesFragment extends Fragment {
         mListener = null;
     }
 
-    private class CategoriesLikesAdapter extends ArrayAdapter<Category> {
+    private class CategoriesLikesAdapter extends ArrayAdapter<Book> {
 
         private final Activity context;
-        private final ArrayList<Category> objects;
+        private final ArrayList<Book> objects;
 
-        CategoriesLikesAdapter(@NonNull Activity context, @NonNull ArrayList<Category> objects) {
+        CategoriesLikesAdapter(@NonNull Activity context, @NonNull ArrayList<Book> objects) {
             super(context, R.layout.categories_drawer_item, objects);
 
             this.objects = objects;
@@ -107,40 +109,28 @@ public class CategoriesFragment extends Fragment {
             checkBox.setButtonDrawable(android.R.drawable.btn_star);
 
             //this code sets the values of the objects to values from the arrays
-            Category item = objects.get(position);
-            nameTextField.setText(item.getName());
-            groupTextField.setText(item.getCategoryGroup());
+            Book item = objects.get(position);
+            nameTextField.setText(item.getTitle());
+            groupTextField.setText(item.getAuthor());
             if(user==null){
                 checkBox.setClickable(false);
             }else{
                 checkBox.setClickable(true);
             }
-            checkBox.setChecked(item.isChecked());
+            checkBox.setChecked(item.isLiked());
+            rowView.setOnClickListener(a -> mListener.onDisplayDetailsListener(item));
             checkBox.setOnCheckedChangeListener((compoundButton, b) -> {
-
                 if(user!=null) {
                     DatabaseAccess instance = DatabaseAccess.getInstance(context);
                     instance.setLike(item, b, user);
                 }
             });
-
-            rowView.setOnClickListener(a->mListener.onCategoryClick(item));
-            if(item.getImage()!=null){
-                imageView.setScaleType(ImageView.ScaleType.CENTER_INSIDE);
-                imageView.setAdjustViewBounds(true);
-                imageView.setImageBitmap(BitmapFactory.decodeByteArray(item.getImage(), 0, item.getImage().length));
+            if(item.getCover()!=null){
+                imageView.setImageBitmap(item.getCoverAsBitmap());
             }
 
             return rowView;
         }
-    }
-
-    public void refreshData() {
-        DatabaseAccess instance = DatabaseAccess.getInstance(getContext());
-        ArrayList<Category> recommends = instance.getCategoriesWithLikes(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("pref_userName", null));
-        adapter.clear();
-        adapter.addAll(recommends);
-        adapter.notifyDataSetChanged();
     }
 
 }

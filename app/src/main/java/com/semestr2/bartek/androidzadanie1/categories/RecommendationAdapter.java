@@ -15,6 +15,8 @@ import android.widget.TextView;
 
 import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.R;
+import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
+import com.semestr2.bartek.androidzadanie1.home.HomeFragment;
 
 import java.util.ArrayList;
 
@@ -22,10 +24,12 @@ public class RecommendationAdapter extends ArrayAdapter<Category> {
 
     private final Activity context;
     private final ArrayList<Category> objects;
+    private final HomeFragment.OnHomeFragmentInteractionListener mListener;
 
-    public RecommendationAdapter(@NonNull Activity context, @NonNull ArrayList<Category> objects) {
+
+    public RecommendationAdapter(@NonNull Activity context, @NonNull ArrayList<Category> objects, HomeFragment.OnHomeFragmentInteractionListener l) {
         super(context, R.layout.recommendation, objects);
-
+mListener = l;
         this.objects = objects;
         this.context = context;
     }
@@ -62,6 +66,8 @@ public class RecommendationAdapter extends ArrayAdapter<Category> {
             imageView.setAdjustViewBounds(true);
             imageView.setImageBitmap(BitmapFactory.decodeByteArray(item.getImage(), 0, item.getImage().length));
         }
+
+        rowView.setOnClickListener(a->mListener.onCategoryClick(item));
 
         return rowView;
     }

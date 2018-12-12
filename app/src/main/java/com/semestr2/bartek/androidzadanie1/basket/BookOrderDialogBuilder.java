@@ -18,7 +18,9 @@ import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
 public class BookOrderDialogBuilder {
-    public static void showOrderDialog(Context ctx, Book mBook, OnFragmentInteractionListener mListener, ViewGroup parent) {
+
+
+    public static void showOrderDialog(Context ctx, Book mBook, OnFragmentInteractionListener mListener, ViewGroup parent, OnBookOrderListener onBookOrderListener) {
         DatabaseAccess instance = DatabaseAccess.getInstance(ctx);
         final Book b = instance.getBasketItem(mBook);
         Dialog dialog = new Dialog(ctx);
@@ -53,10 +55,22 @@ public class BookOrderDialogBuilder {
                     add.setOnClickListener(v -> {
                         instance.addToBasket(b);
                         dialog.dismiss();
-                        Toast.makeText(ctx, "Dodano " + b.getTitle() + " x " + b.getAmount() + "do koszyka", Toast.LENGTH_SHORT);
+                        Toast.makeText(ctx, "Dodano " + b.getTitle() + " x " + b.getAmount() + "do koszyka", Toast.LENGTH_SHORT).show();
+                        if(onBookOrderListener!=null){
+                            onBookOrderListener.onAddToBasket();
+                        }
                     });
                     buy.setClickable(true);
                     buy.setBackgroundColor(ctx.getResources().getColor(R.color.colorPrimary));
+                    buy.setOnClickListener(v -> {
+                        instance.addToBasket(b);
+                        dialog.dismiss();
+                        Toast.makeText(ctx, "Dodano " + b.getTitle() + " x " + b.getAmount() + "do koszyka", Toast.LENGTH_SHORT).show();
+                        if(onBookOrderListener!=null){
+                            onBookOrderListener.onBuyNow();
+                        }
+
+                    });
                     total.setText(String.format(ctx.getResources().getString(R.string.price_for_book), amount * b.getPrice() + ""));
                 }else{
                     b.setAmount(0);
@@ -80,4 +94,9 @@ public class BookOrderDialogBuilder {
         input.setText(b.getAmount()+"");
     }
 
+    public interface OnBookOrderListener {
+        void onBuyNow();
+
+        void onAddToBasket();
+    }
 }

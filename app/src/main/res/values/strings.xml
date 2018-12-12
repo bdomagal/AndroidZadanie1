@@ -40,4 +40,6 @@
     <string name="buy_now">Kup Teraz</string>
     <string name="total">Razem: %1$s</string>
     <string name="price_for_book">Cena: %1$s</string>
+    <string name="books">Książki</string>
+    <string name="display_as_galeries">Wyświetlaj galerie na liście książek</string>
 </resources>

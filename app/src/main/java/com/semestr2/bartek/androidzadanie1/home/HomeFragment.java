@@ -48,7 +48,7 @@ public class HomeFragment extends Fragment{
         GridView recommendationsView = v.findViewById(R.id.recommendations);
         recommendationsView.setNumColumns(2);
         ArrayList<Category> recommends = instance.getRecommendations(PreferenceManager.getDefaultSharedPreferences(getActivity()).getString("pref_userName", null));
-        rc = new RecommendationAdapter(mActivity, recommends);
+        rc = new RecommendationAdapter(mActivity, recommends, mListener);
         recommendationsView.setAdapter(rc);
 
         return v;
@@ -98,6 +98,8 @@ public class HomeFragment extends Fragment{
         //void onHomeFragmentInteraction(Uri uri);
         void onHomeFragmentInteraction(Uri uri, Object data);
         void setHomeIcon();
+
+        void onCategoryClick(Category item);
     }
 
 

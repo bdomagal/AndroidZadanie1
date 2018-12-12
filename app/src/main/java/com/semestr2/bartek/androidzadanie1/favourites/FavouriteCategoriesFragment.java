@@ -1,4 +1,4 @@
-package com.semestr2.bartek.androidzadanie1.categories;
+package com.semestr2.bartek.androidzadanie1.favourites;
 
 import android.app.Activity;
 import android.content.Context;
@@ -18,21 +18,22 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.R;
+import com.semestr2.bartek.androidzadanie1.categories.Category;
+import com.semestr2.bartek.androidzadanie1.database.DatabaseAccess;
 import com.semestr2.bartek.androidzadanie1.fragments.OnFragmentInteractionListener;
 
 import java.util.ArrayList;
 
 
-public class CategoriesFragment extends Fragment {
+public class FavouriteCategoriesFragment extends Fragment {
 
     private CategoriesLikesAdapter adapter;
 
     private AppCompatActivity mActivity;
     private OnFragmentInteractionListener mListener;
 
-    public CategoriesFragment() {
+    public FavouriteCategoriesFragment() {
         // Required empty public constructor
     }
 
@@ -50,7 +51,7 @@ public class CategoriesFragment extends Fragment {
         ListView lv = v.findViewById(R.id.categories_list_view);
 
         adapter = new CategoriesLikesAdapter(mActivity, DatabaseAccess.getInstance(getContext())
-                .getCategoriesWithLikes(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("pref_userName", null)
+                .getFavouriteCategories(PreferenceManager.getDefaultSharedPreferences(getContext()).getString("pref_userName", null)
         ));
         lv.setAdapter(adapter);
 

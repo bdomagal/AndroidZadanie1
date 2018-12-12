@@ -70,6 +70,20 @@ public class CategoriesArrayAdapter extends ArrayAdapter<Category> {
         return objects;
     }
 
+    public void reset() {
+        for (Category object : objects) {
+            object.setChecked(false);
+        }
+    }
+
+    public void selectCategory(Category cat) {
+        for (Category object : objects) {
+            if(cat.getName().equals(object.getName())){
+                object.setChecked(true);
+            }
+        }
+    }
+
     public static class OnItemClickListener implements AdapterView.OnItemClickListener {
 
         @Override
